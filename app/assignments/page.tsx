@@ -37,6 +37,7 @@ export default function AssignmentForm() {
       setPrice("");
       setFile(null);
     } catch (error) {
+       console.error("Error submitting assignment:", error);
       setMessage("Error submitting assignment");
     } finally {
       setLoading(false);

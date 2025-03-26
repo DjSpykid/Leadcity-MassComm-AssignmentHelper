@@ -62,6 +62,7 @@ export default function OrderPage() {
       alert(`Order placed! Total: ₦${calculatePrice()}`);
       router.push("/tracking");
     } catch (error) {
+       console.error("Error submitting assignment:", error);
       setSubmitError("Failed to submit order. Please try again.");
     } finally {
       setIsSubmitting(false);
