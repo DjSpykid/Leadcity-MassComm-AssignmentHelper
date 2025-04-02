@@ -27,7 +27,7 @@
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.484.0",
     "mongoose": "^8.13.0",
-    "next": "15.2.4",
+    "next": "^15.2.4",
     "next-auth": "^4.24.11",
     "prisma": "^6.5.0",
     "react": "^18.3.1",
@@ -52,14 +52,14 @@
     "@types/canvas-confetti": "^1.9.0",
     "@types/formidable": "^3.4.5",
     "@types/jsonwebtoken": "^9.0.9",
-    "@types/node": "^20.17.28",
-    "@types/react": "^19",
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.1.0",
     "@types/react-dom": "^19",
     "@uploadthing/react": "^7.3.0",
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^5.8.2"
   }
 }
