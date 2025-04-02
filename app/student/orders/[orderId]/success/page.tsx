@@ -8,14 +8,16 @@ import { useEffect } from "react";
 import confetti from "canvas-confetti";
 
 
-type Props = {
+
+type PageProps = {
   params: {
     orderId: string;
   };
+  searchParams?: { [key: string]: string | string[] | undefined };
 };
 
 
-export default function OrderSuccessPage({params}: Props) {
+export default function OrderSuccessPage({params}: PageProps) {
   const router = useRouter();
 
   useEffect(() => {
