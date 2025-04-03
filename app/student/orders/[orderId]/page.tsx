@@ -524,6 +524,7 @@ import {
   FileEdit,
   Star,
 } from "lucide-react";
+import OrderHelp from "@/components/OrderHelp";
 
 type ServiceFields = {
   name: string;
@@ -975,6 +976,7 @@ export default function OrderDetailsPage() {
           </div>
         </div>
       </div>
+      <OrderHelp/>
     </div>
   );
 }

@@ -42,7 +42,9 @@ export default function WhatsAppHelp() {
             className="bg-white p-4 rounded-xl shadow-xl w-64"
           >
             <div className="flex justify-between items-center mb-2">
-              <h3 className="font-medium text-gray-900">Need help?</h3>
+              <h3 className="font-medium text-gray-900">
+                Confirm Order ?
+              </h3>
               <button
                 onClick={() => setIsExpanded(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -51,10 +53,10 @@ export default function WhatsAppHelp() {
               </button>
             </div>
             <p className="text-sm text-gray-600 mb-3">
-              Chat with us on WhatsApp for quick assistance.
+              Chat with us on WhatsApp to confirm your order with payment receipt.
             </p>
             <Link
-              href="https://wa.me/2349069650658?text=Hi%20MassComm%20Solutions,%20I%20need%20help"
+              href="https://wa.me/2349069650658?text=Hi%20MassComm%20Solutions,%20I%20am%20here%20to%20confirm%20my%20order."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors"

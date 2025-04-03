@@ -1,11 +1,21 @@
 export const courseReps = [
   {
     id: "1",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone: "08012345678",
-    location: "Department of Computer Science, Room 101",
-    courses: ["CSC 101", "CSC 201", "CSC 301, CMT 201"],
+    name: "Ojo Abiola Israel",
+    email: "abyolakim@gmail.com",
+    phone: "09152837136",
+    location: "Architecture building/College of medecine lecture hub",
+    courses: [
+      "MPA 211",
+      "MPA 212",
+      "MPA 213",
+      "MPA 214",
+      "MPA 215",
+      "CMT 118",
+      "CMT 211",
+      "GST 211",
+      "GST 212",
+    ],
   },
   {
     id: "2",
