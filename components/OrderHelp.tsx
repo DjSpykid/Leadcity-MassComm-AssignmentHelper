@@ -13,10 +13,10 @@ interface OrderHelpProps {
 export default function OrderHelp({ orderId, userName }: OrderHelpProps) {
   // Create the WhatsApp link with personalized message
   const whatsappLink = orderId
-    ? `https://wa.me/2349069650658?text=Hi%20MassComm%20Solutions,%20this%20is%20${
+    ? `https://wa.me/2349123774118?text=Hi%20MassComm%20Solutions,%20this%20is%20${
         userName ? encodeURIComponent(userName) : "a%20user"
       }%20from%20MassComm.%20I%20need%20help%20with%20order%20number:%20${orderId}`
-    : `https://wa.me/2349069650658?text=Hi%20MassComm%20Solutions,%20this%20is%20${
+    : `https://wa.me/2349123774118?text=Hi%20MassComm%20Solutions,%20this%20is%20${
         userName ? encodeURIComponent(userName) : "a%20user"
       }%20from%20MassComm.%20I%20need%20help%20with%20my%20order`;
 

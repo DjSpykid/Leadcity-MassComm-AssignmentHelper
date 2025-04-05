@@ -1,9 +1,7 @@
 
 
-
-
 // "use client";
-
+// import { usePaystackPayment } from 'react-paystack';
 // import { useState, useRef } from "react";
 // import { useRouter } from "next/navigation";
 // import { toast } from "sonner";
@@ -19,13 +17,15 @@
 //   Bookmark,
 //   PenTool,
 //   Zap,
+//   Plus,
+//   Minus,
 // } from "lucide-react";
 // import { courseReps } from "@/data/courseReps";
 // import { useAuth } from "@/context/AuthContext";
 
 // const serviceTypes = [
 //   {
-//     id: "complete-help Only",
+//     id: "complete-help",
 //     title: "Complete Assignment Help",
 //     description: "Full-service solution from research to submission",
 //     icon: "🧠",
@@ -83,18 +83,79 @@
 // const urgencyOptions = [
 //   {
 //     id: "standard",
-//     label: "(Completed within 2-3 working days)",
+//     label: "Standard (2-3 days)",
 //     multiplier: 1,
 //   },
 //   {
 //     id: "urgent",
-//     label: "(Completed within 24 hours - +2% charge)",
-//     multiplier: 1.5,
+//     label: "Urgent (24 hours) +20%",
+//     multiplier: 1.4,
 //   },
 // ];
 
+// // Custom Number Input Component
+// const NumberInput = ({
+//   value,
+//   onChange,
+//   min = 1,
+//   max = 100,
+//   className = "",
+//   disabled = false
+// }) => {
+//   const handleIncrement = () => {
+//     if (!disabled && value < max) {
+//       onChange(value + 1);
+//     }
+//   };
+
+//   const handleDecrement = () => {
+//     if (!disabled && value > min) {
+//       onChange(value - 1);
+//     }
+//   };
+
+//   const handleChange = (e) => {
+//     const newValue = parseInt(e.target.value) || min;
+//     if (newValue >= min && newValue <= max) {
+//       onChange(newValue);
+//     }
+//   };
+
+//   return (
+//     <div className={`flex items-center border border-gray-300 rounded-xl overflow-hidden ${className} ${
+//       disabled ? "opacity-50 cursor-not-allowed" : ""
+//     }`}>
+//       <button
+//         type="button"
+//         onClick={handleDecrement}
+//         disabled={disabled || value <= min}
+//         className="px-3 py-2 bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+//       >
+//         <Minus className="w-4 h-4" />
+//       </button>
+//       <input
+//         type="number"
+//         value={value}
+//         onChange={handleChange}
+//         min={min}
+//         max={max}
+//         disabled={disabled}
+//         className="w-12 text-center border-x border-gray-300 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//       />
+//       <button
+//         type="button"
+//         onClick={handleIncrement}
+//         disabled={disabled || value >= max}
+//         className="px-3 py-2 bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+//       >
+//         <Plus className="w-4 h-4" />
+//       </button>
+//     </div>
+//   );
+// };
+
 // export default function AssignmentHelpPage() {
-//    const { getToken } = useAuth();
+//   const { getToken, user } = useAuth();
 //   const router = useRouter();
 //   const [step, setStep] = useState<"select" | "details" | "review">("select");
 //   const [selectedService, setSelectedService] = useState<string | null>(null);
@@ -212,8 +273,126 @@
 //     return Math.round(price);
 //   };
 
+//   // Paystack payment configuration
+//   const config = {
+//     reference: `${new Date().getTime()}`,
+//     email: user?.email || "customer@example.com",
+//     amount: calculatePrice() * 100, // in kobo
+//     publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
+//     metadata: {
+//       custom_fields: [
+//         {
+//           display_name: "Service Type",
+//           variable_name: "service_type",
+//           value: selectedService,
+//         },
+//       ],
+//     },
+//   };
+
+//   const initializePayment = usePaystackPayment(config);
+
+//   // const handleSubmit = async () => {
+//   //   const requiredFields = [
+//   //     "studentName",
+//   //     "matricNumber",
+//   //     "courseCode",
+//   //     "selectedRep",
+//   //     "deadline",
+//   //   ];
+
+//   //   // Validate required fields
+//   //   for (const field of requiredFields) {
+//   //     if (!formData[field]) {
+//   //       toast.error(
+//   //         `Please fill in ${field.replace(/([A-Z])/g, " $1").toLowerCase()}`
+//   //       );
+//   //       return;
+//   //     }
+//   //   }
+
+//   //   if (
+//   //     (selectedService === "printing" || selectedService === "print-bind") &&
+//   //     !formData.handwrittenRequired &&
+//   //     uploadedFiles.length === 0
+//   //   ) {
+//   //     toast.error("Please upload files or select handwritten option");
+//   //     return;
+//   //   }
+
+//   //   if (
+//   //     (selectedService === "complete-help" || selectedService === "custom") &&
+//   //     !formData.assignmentQuestion
+//   //   ) {
+//   //     toast.error("Please provide assignment details");
+//   //     return;
+//   //   }
+
+//   //   setIsSubmitting(true);
+
+//   //   try {
+//   //     const token = await getToken();
+//   //     if (!token) {
+//   //       toast.error("Session expired. Please login again.");
+//   //       router.push("/auth/user-login");
+//   //       return;
+//   //     }
+
+//   //     // Initialize Paystack payment
+//   //     initializePayment({
+//   //       onSuccess: async (response) => {
+//   //         // Prepare order data
+//   //         const orderData = {
+//   //           serviceType: selectedService,
+//   //           price: calculatePrice(),
+//   //           details: {
+//   //             ...formData,
+//   //             repDetails: courseReps.find(
+//   //               (rep) => rep.id === formData.selectedRep
+//   //             ),
+//   //             attachments: uploadedFiles.map((file) => file.name),
+//   //           },
+//   //           paymentReference: response.reference,
+//   //         };
+
+//   //         // Submit order to backend
+//   //         const formDataToSend = new FormData();
+//   //         formDataToSend.append("data", JSON.stringify(orderData));
+//   //         uploadedFiles.forEach((file) => {
+//   //           formDataToSend.append("files", file);
+//   //         });
+
+//   //         const res = await fetch("/api/orders", {
+//   //           method: "POST",
+//   //           headers: {
+//   //             Authorization: `Bearer ${token}`,
+//   //           },
+//   //           body: formDataToSend,
+//   //         });
+
+//   //         if (!res.ok) {
+//   //           const errorData = await res.json();
+//   //           throw new Error(errorData.error || "Failed to submit order");
+//   //         }
+
+//   //         const { orderId } = await res.json();
+//   //         toast.success("Payment successful! Order created.");
+//   //         router.push(`/student/orders/${orderId}/success`);
+//   //       },
+//   //       onClose: () => {
+//   //         toast.warning("Payment was not completed");
+//   //         setIsSubmitting(false);
+//   //       },
+//   //     });
+//   //   } catch (error) {
+//   //     console.error("Submission error:", error);
+//   //     toast.error(error.message || "Order submission failed");
+//   //     setIsSubmitting(false);
+//   //   }
+//   // };
+
 // const handleSubmit = async () => {
-//   // 1. Validate required fields
+//   // Validate required fields
 //   const requiredFields = [
 //     "studentName",
 //     "matricNumber",
@@ -231,15 +410,16 @@
 //     }
 //   }
 
-//   if (selectedService === "printing" || selectedService === "print-bind") {
-//     if (!formData.handwrittenRequired && uploadedFiles.length === 0) {
-//       toast.error("Please upload files or select handwritten option");
-//       return;
-//     }
+//   // Validate service-specific requirements
+//   if (
+//     (selectedService === "printing" || selectedService === "print-bind") &&
+//     !formData.handwrittenRequired &&
+//     uploadedFiles.length === 0
+//   ) {
+//     toast.error("Please upload files or select handwritten option");
+//     return;
 //   }
 
-
-//   // 3. Validate assignment help services
 //   if (
 //     (selectedService === "complete-help" || selectedService === "custom") &&
 //     !formData.assignmentQuestion
@@ -258,63 +438,140 @@
 //       return;
 //     }
 
-//     // Prepare FormData with all order information
-//     const formDataToSend = new FormData();
-//     formDataToSend.append("serviceType", selectedService || "");
-//     formDataToSend.append("price", calculatePrice().toString());
-//     formDataToSend.append(
-//       "details",
-//       JSON.stringify({
-//         ...formData,
+//     // Prepare the complete order data structure
+//     const orderData = {
+//       serviceType: selectedService,
+//       price: calculatePrice(),
+//       details: {
+//         // Student information (always included)
+//         studentName: formData.studentName,
+//         matricNumber: formData.matricNumber,
+//         courseCode: formData.courseCode,
+
+//         // Printing-related fields (for print services)
+//         ...((selectedService === "print-bind" ||
+//           selectedService === "printing") && {
+//           printType: formData.printType,
+//           copies: formData.copies,
+//           doubleSided: formData.doubleSided,
+//           handwrittenRequired: formData.handwrittenRequired,
+//           handwritingInstructions: formData.handwritingInstructions,
+//           pages: formData.pages || 1, // Default to 1 if not specified
+//         }),
+
+//         // Binding-related fields (for binding services)
+//         ...((selectedService === "print-bind" ||
+//           selectedService === "binding") && {
+//           bindingType: formData.bindingType,
+//         }),
+
+//         // Assignment-related fields (for complete help/custom)
+//         ...((selectedService === "complete-help" ||
+//           selectedService === "custom") && {
+//           assignmentQuestion: formData.assignmentQuestion,
+//           pages: formData.pages || 1,
+//           formatting: formData.formatting,
+//           urgency: formData.urgency,
+//           deliveryFormat: formData.deliveryFormat,
+//         }),
+
+//         // Common fields
+//         selectedRep: formData.selectedRep,
+//         specialInstructions: formData.specialInstructions,
+//         deadline: formData.deadline,
 //         repDetails: courseReps.find((rep) => rep.id === formData.selectedRep),
-//         attachments: uploadedFiles.map((file) => file.name),
-//       })
-//     );
+//       },
+//       attachments: uploadedFiles.map((file) => file.name),
+//       paymentReference: `${new Date().getTime()}`,
+//     };
+
+//     // Prepare FormData for file uploads
+//     const formDataToSend = new FormData();
+//     formDataToSend.append("data", JSON.stringify(orderData));
 
 //     // Add files if they exist
 //     uploadedFiles.forEach((file) => {
 //       formDataToSend.append("files", file);
 //     });
 
-//     // Send request to backend
-//     const res = await fetch("/api/orders", {
-//       method: "POST",
-//       headers: {
-//         Authorization: `Bearer ${token}`,
+//     // Initialize Paystack payment
+//     initializePayment({
+//       reference: orderData.paymentReference,
+//       email: user?.email || "customer@example.com",
+//       amount: orderData.price * 100, // in kobo
+//       publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
+//       metadata: {
+//         custom_fields: [
+//           {
+//             display_name: "Service Type",
+//             variable_name: "service_type",
+//             value: selectedService,
+//           },
+//           {
+//             display_name: "Matric Number",
+//             variable_name: "matric_number",
+//             value: formData.matricNumber,
+//           },
+//         ],
 //       },
-//       body: formDataToSend,
+//       onSuccess: async (response) => {
+//         try {
+//           // Submit order to backend after successful payment
+//           const res = await fetch("/api/orders", {
+//             method: "POST",
+//             headers: {
+//               Authorization: `Bearer ${token}`,
+//             },
+//             body: formDataToSend,
+//           });
+
+//           if (!res.ok) {
+//             const errorData = await res.json();
+//             throw new Error(errorData.error || "Failed to submit order");
+//           }
+
+//           const { orderId } = await res.json();
+//           toast.success("Payment successful! Order created.");
+//           router.push(`/student/orders/${orderId}/success`);
+//         } catch (error) {
+//           console.error("Order submission error:", error);
+//           toast.error(error.message || "Failed to create order after payment");
+//           setIsSubmitting(false);
+//         }
+//       },
+//       onClose: () => {
+//         toast.warning("Payment was not completed");
+//         setIsSubmitting(false);
+//       },
 //     });
-
-//     if (!res.ok) {
-//       const errorData = await res.json();
-//       throw new Error(errorData.error || "Failed to submit order");
-//     }
-
-//     const { orderId } = await res.json();
-//     toast.success("Order created successfully!");
-//     router.push(`/student/orders/${orderId}/success`);
-//   } catch (error: unknown) {
+//   } catch (error) {
 //     console.error("Submission error:", error);
-
-//     // Enhanced error handling
-//     if (error.message.includes("token") || error.message.includes("auth")) {
-//       toast.error("Session expired. Please login again.");
-//       router.push("/auth/user-login");
-//     } else if (error.message.includes("file")) {
-//       toast.error("File upload failed. Please try again.");
-//     } else if (error.message.includes("Missing required fields")) {
-//       toast.error(error.message);
-//     } else {
-//       toast.error(error.message || "Order submission failed");
-//     }
-//   } finally {
+//     toast.error(error.message || "Order submission failed");
 //     setIsSubmitting(false);
 //   }
 // };
-//   const filteredReps = formData.courseCode
-//     ? courseReps.filter((rep) => rep.courses.includes(formData.courseCode))
-//     : [];
 
+
+
+//   // Helper function to normalize course codes
+//   function normalizeCourseCode(code: string): string {
+//     return code.replace(/\s+/g, "").toUpperCase();
+//   }
+
+//   // Helper function to find reps by course code
+//   function findRepsByCourse(courseCode: string) {
+//     if (!courseCode) return [];
+
+//     const normalizedInput = normalizeCourseCode(courseCode);
+//     return courseReps.filter((rep) =>
+//       rep.courses.some(
+//         (course) => normalizeCourseCode(course) === normalizedInput
+//       )
+//     );
+//   }
+ 
+
+//   const filteredReps = findRepsByCourse(formData.courseCode);
 //   return (
 //     <div className="min-h-screen bg-gray-50 py-8">
 //       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -477,20 +734,59 @@
 //                   </div>
 //                 </div>
 
-//                 <div className="mt-5">
+//                 <div className="mt-5 relative">
 //                   <label className="block font-medium text-gray-700 mb-2">
 //                     Course Code *
 //                   </label>
-//                   <input
-//                     type="text"
-//                     required
-//                     value={formData.courseCode}
-//                     onChange={(e) =>
-//                       setFormData({ ...formData, courseCode: e.target.value })
-//                     }
-//                     className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//                     placeholder="e.g., CSC 101"
-//                   />
+//                   <div className="relative">
+//                     <input
+//                       type="text"
+//                       required
+//                       value={formData.courseCode}
+//                       onChange={(e) => {
+//                         setFormData({
+//                           ...formData,
+//                           courseCode: e.target.value,
+//                           selectedRep: "",
+//                         });
+//                       }}
+//                       className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+//                       placeholder="e.g., CSC 101 or PHY101"
+//                       list="courseSuggestions"
+//                     />
+//                     {formData.courseCode && (
+//                       <button
+//                         type="button"
+//                         onClick={() => {
+//                           setFormData({
+//                             ...formData,
+//                             courseCode: "",
+//                             selectedRep: "",
+//                           });
+//                         }}
+//                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+//                       >
+//                         <X className="w-5 h-5" />
+//                       </button>
+//                     )}
+//                   </div>
+
+//                   {/* Course code validation feedback */}
+//                   {formData.courseCode && filteredReps.length === 0 && (
+//                     <p className="mt-2 text-sm text-red-600">
+//                       No representatives found for {formData.courseCode}. Please
+//                       check the course code.
+//                     </p>
+//                   )}
+
+//                   {/* Course suggestions datalist */}
+//                   <datalist id="courseSuggestions">
+//                     {Array.from(
+//                       new Set(courseReps.flatMap((rep) => rep.courses))
+//                     ).map((course) => (
+//                       <option key={course} value={course} />
+//                     ))}
+//                   </datalist>
 //                 </div>
 //               </div>
 
@@ -614,23 +910,15 @@
 //                         <label className="block font-medium text-gray-700 mb-2">
 //                           Number of Copies *
 //                         </label>
-//                         <input
-//                           type="number"
-//                           min="1"
-//                           max="10"
+//                         <NumberInput
 //                           value={formData.copies}
-//                           onChange={(e) => {
+//                           onChange={(value) => {
 //                             if (formData.handwrittenRequired) return;
-//                             setFormData({
-//                               ...formData,
-//                               copies: parseInt(e.target.value) || 1,
-//                             });
+//                             setFormData({ ...formData, copies: value });
 //                           }}
-//                           className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-//                             formData.handwrittenRequired
-//                               ? "opacity-50 cursor-not-allowed border-gray-200"
-//                               : "border-gray-300"
-//                           }`}
+//                           min={1}
+//                           max={10}
+//                           className="w-full"
 //                           disabled={formData.handwrittenRequired}
 //                         />
 //                         <div className="mt-3 flex items-center">
@@ -687,7 +975,8 @@
 //                             className="h-5 w-5 text-blue-600 rounded"
 //                           />
 //                           <span className="font-medium text-gray-700">
-//                             Lecturer requires handwritten submission on fullscap paper
+//                             Lecturer requires handwritten submission on fullscap
+//                             paper
 //                           </span>
 //                         </label>
 
@@ -697,23 +986,20 @@
 //                               <label className="block font-medium text-gray-700 mb-2">
 //                                 Number of Pages *
 //                               </label>
-//                               <input
-//                                 type="number"
-//                                 min="1"
+//                               <NumberInput
 //                                 value={formData.pages}
-//                                 onChange={(e) =>
-//                                   setFormData({
-//                                     ...formData,
-//                                     pages: Math.max(1, parseInt(e.target.value) || 1),
-//                                   })
+//                                 onChange={(value) =>
+//                                   setFormData({ ...formData, pages: value })
 //                                 }
-//                                 className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+//                                 min={1}
+//                                 className="w-full"
 //                               />
 //                               <p className="text-sm text-gray-500 mt-1">
-//                                 Price: ₦500 (1st page) + ₦200 per additional page
+//                                 Price: ₦500 (1st page) + ₦200 per additional
+//                                 page
 //                               </p>
 //                             </div>
-                            
+
 //                             <div>
 //                               <label className="block font-medium text-gray-700 mb-2">
 //                                 Handwriting Instructions
@@ -818,19 +1104,15 @@
 //                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
 //                     <div>
 //                       <label className="block font-medium text-gray-700 mb-2">
-//                         Number of Pages
+//                         Number of Pages *
 //                       </label>
-//                       <input
-//                         type="number"
-//                         min="1"
+//                       <NumberInput
 //                         value={formData.pages}
-//                         onChange={(e) =>
-//                           setFormData({
-//                             ...formData,
-//                             pages: parseInt(e.target.value) || 1,
-//                           })
+//                         onChange={(value) =>
+//                           setFormData({ ...formData, pages: value })
 //                         }
-//                         className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+//                         min={1}
+//                         className="w-full"
 //                       />
 //                       <p className="text-sm text-gray-500 mt-1">
 //                         Price: ₦200 per page (Total: ₦{formData.pages * 200})
@@ -870,7 +1152,7 @@
 
 //                   <div className="mt-5">
 //                     <label className="block font-medium text-gray-700 mb-2">
-//                       Urgency
+//                       Urgency *
 //                     </label>
 //                     <div className="grid grid-cols-2 gap-3">
 //                       {urgencyOptions.map((option) => (
@@ -909,7 +1191,7 @@
 
 //                   <div className="mt-5">
 //                     <label className="block font-medium text-gray-700 mb-2">
-//                       Delivery Format
+//                       Delivery Format *
 //                     </label>
 //                     <div className="space-y-3">
 //                       <label className="flex items-center space-x-3 p-4 border border-gray-300 rounded-xl hover:border-blue-500 cursor-pointer">
@@ -931,7 +1213,8 @@
 //                             Handwritten on Fullscap Paper
 //                           </p>
 //                           <p className="text-sm text-gray-500">
-//                             We&apos;ll write the assignment by hand on fullscap paper
+//                             We&apos;ll write the assignment by hand on fullscap
+//                             paper
 //                           </p>
 //                         </div>
 //                       </label>
@@ -990,7 +1273,7 @@
 
 //                   <div className="mt-5">
 //                     <label className="block font-medium text-gray-700 mb-2">
-//                       Urgency
+//                       Urgency *
 //                     </label>
 //                     <div className="grid grid-cols-2 gap-3">
 //                       {urgencyOptions.map((option) => (
@@ -1035,63 +1318,68 @@
 //                 </h2>
 
 //                 <div className="space-y-5">
-//                   <div>
+//                   <div className="mt-5">
 //                     <label className="block font-medium text-gray-700 mb-2">
 //                       Course Representative *
 //                     </label>
-//                     <select
-//                       value={formData.selectedRep}
-//                       onChange={(e) =>
-//                         setFormData({
-//                           ...formData,
-//                           selectedRep: e.target.value,
-//                         })
-//                       }
-//                       className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//                       required
-//                       disabled={!formData.courseCode}
-//                     >
-//                       <option value="">Select your course rep</option>
-//                       {filteredReps.map((rep) => (
-//                         <option key={rep.id} value={rep.id}>
-//                           {rep.name} ({rep.courses.join(", ")})
-//                         </option>
-//                       ))}
-//                     </select>
+
+//                     {filteredReps.length > 0 ? (
+//                       <div className="space-y-3">
+//                         {filteredReps.map((rep) => (
+//                           <div
+//                             key={rep.id}
+//                             onClick={() =>
+//                               setFormData({ ...formData, selectedRep: rep.id })
+//                             }
+//                             className={`p-4 border rounded-xl cursor-pointer transition-colors ${
+//                               formData.selectedRep === rep.id
+//                                 ? "border-blue-500 bg-blue-50"
+//                                 : "border-gray-300 hover:border-gray-400"
+//                             }`}
+//                           >
+//                             <div className="flex items-start">
+//                               <div
+//                                 className={`flex-shrink-0 h-5 w-5 rounded-full border flex items-center justify-center mr-3 mt-1 ${
+//                                   formData.selectedRep === rep.id
+//                                     ? "border-blue-500 bg-blue-500"
+//                                     : "border-gray-400"
+//                                 }`}
+//                               >
+//                                 {formData.selectedRep === rep.id && (
+//                                   <div className="w-2 h-2 bg-white rounded-full"></div>
+//                                 )}
+//                               </div>
+//                               <div>
+//                                 <h4 className="font-medium text-gray-900">
+//                                   {rep.name}
+//                                 </h4>
+//                                 <p className="text-sm text-gray-600 mt-1">
+//                                   <span className="font-medium">Courses:</span>{" "}
+//                                   {rep.courses.join(", ")}
+//                                 </p>
+//                                 <p className="text-sm text-gray-600">
+//                                   <span className="font-medium">Contact:</span>{" "}
+//                                   {rep.phone} | {rep.email}
+//                                 </p>
+//                                 <p className="text-sm text-gray-600">
+//                                   <span className="font-medium">Location:</span>{" "}
+//                                   {rep.location}
+//                                 </p>
+//                               </div>
+//                             </div>
+//                           </div>
+//                         ))}
+//                       </div>
+//                     ) : (
+//                       <div className="p-4 bg-gray-50 rounded-xl text-center">
+//                         <p className="text-gray-500">
+//                           {formData.courseCode
+//                             ? "No representatives found for this course"
+//                             : "Enter a course code to see available representatives"}
+//                         </p>
+//                       </div>
+//                     )}
 //                   </div>
-
-//                   {formData.selectedRep && (
-//                     <div className="bg-blue-50 p-4 rounded-lg">
-//                       <h4 className="font-medium text-blue-800">
-//                         {
-//                           courseReps.find((r) => r.id === formData.selectedRep)
-//                             ?.name
-//                         }
-//                       </h4>
-//                       <p className="text-sm text-blue-700 mt-1">
-//                         Email:{" "}
-//                         {
-//                           courseReps.find((r) => r.id === formData.selectedRep)
-//                             ?.email
-//                         }
-//                       </p>
-//                       <p className="text-sm text-blue-700">
-//                         Phone:{" "}
-//                         {
-//                           courseReps.find((r) => r.id === formData.selectedRep)
-//                             ?.phone
-//                         }
-//                       </p>
-//                       <p className="text-sm text-blue-700">
-//                         Location:{" "}
-//                         {
-//                           courseReps.find((r) => r.id === formData.selectedRep)
-//                             ?.location
-//                         }
-//                       </p>
-//                     </div>
-//                   )}
-
 //                   <div className="mt-4">
 //                     <label className="block font-medium text-gray-700 mb-2">
 //                       Submission Deadline *
@@ -1162,14 +1450,15 @@
 //                       "deadline",
 //                     ];
 
-//                     // Updated validation - file not required for handwritten
-//                   if (
-//       (selectedService === "print-bind" || selectedService === "printing") &&
-//       uploadedFiles.length === 0 &&
-//       !formData.handwrittenRequired
-//     ) {
-//       toast.error("Please upload at least one file");
-//     }
+//                     if (
+//                       (selectedService === "print-bind" ||
+//                         selectedService === "printing") &&
+//                       uploadedFiles.length === 0 &&
+//                       !formData.handwrittenRequired
+//                     ) {
+//                       toast.error("Please upload at least one file");
+//                       return;
+//                     }
 
 //                     if (
 //                       (selectedService === "complete-help" ||
@@ -1266,7 +1555,8 @@
 //                       <span className="text-gray-600">Files to Print:</span>
 //                       <span className="font-medium text-gray-900">
 //                         {uploadedFiles.length} file(s)
-//                         {formData.handwrittenRequired && " (Optional for handwritten)"}
+//                         {formData.handwrittenRequired &&
+//                           " (Optional for handwritten)"}
 //                       </span>
 //                     </div>
 //                   )}
@@ -1315,7 +1605,8 @@
 //                               Handwriting Cost:
 //                             </span>
 //                             <span className="font-medium text-gray-900">
-//                               ₦500 + {formData.pages - 1} × ₦200 = ₦{500 + (formData.pages - 1) * 200}
+//                               ₦500 + {formData.pages - 1} × ₦200 = ₦
+//                               {500 + (formData.pages - 1) * 200}
 //                             </span>
 //                           </div>
 //                           {formData.handwritingInstructions && (
@@ -1521,10 +1812,9 @@
 
 
 
-
 "use client";
-
-import { useState, useRef } from "react";
+import dynamic from "next/dynamic"; // Import dynamic from Next.js
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -1545,6 +1835,12 @@ import {
 import { courseReps } from "@/data/courseReps";
 import { useAuth } from "@/context/AuthContext";
 
+// Dynamically import usePaystackPayment with SSR disabled
+const usePaystackPayment = dynamic(
+  () => import("react-paystack").then((mod) => mod.usePaystackPayment),
+  { ssr: false } // Prevents server-side rendering of this hook
+);
+
 const serviceTypes = [
   {
     id: "complete-help",
@@ -1557,7 +1853,8 @@ const serviceTypes = [
   {
     id: "print-bind",
     title: "Print & Bind / Hand Written Assignment Only",
-    description: "Professional writng of your assign / printing and binding of your documents ",
+    description:
+      "Professional writng of your assign / printing and binding of your documents ",
     icon: "🖨️",
     features: ["High-quality printing", "Spiral binding"],
     basePrice: 550,
@@ -1616,13 +1913,13 @@ const urgencyOptions = [
 ];
 
 // Custom Number Input Component
-const NumberInput = ({ 
-  value, 
-  onChange, 
-  min = 1, 
+const NumberInput = ({
+  value,
+  onChange,
+  min = 1,
   max = 100,
   className = "",
-  disabled = false
+  disabled = false,
 }) => {
   const handleIncrement = () => {
     if (!disabled && value < max) {
@@ -1644,9 +1941,11 @@ const NumberInput = ({
   };
 
   return (
-    <div className={`flex items-center border border-gray-300 rounded-xl overflow-hidden ${className} ${
-      disabled ? "opacity-50 cursor-not-allowed" : ""
-    }`}>
+    <div
+      className={`flex items-center border border-gray-300 rounded-xl overflow-hidden ${className} ${
+        disabled ? "opacity-50 cursor-not-allowed" : ""
+      }`}
+    >
       <button
         type="button"
         onClick={handleDecrement}
@@ -1677,7 +1976,7 @@ const NumberInput = ({
 };
 
 export default function AssignmentHelpPage() {
-  const { getToken } = useAuth();
+  const { getToken, user } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState<"select" | "details" | "review">("select");
   const [selectedService, setSelectedService] = useState<string | null>(null);
@@ -1705,6 +2004,31 @@ export default function AssignmentHelpPage() {
     specialInstructions: "",
     deadline: "",
   });
+
+  // State to hold the Paystack initialize function, only set on client-side
+  const [initializePayment, setInitializePayment] = useState<any>(null);
+
+  // Use useEffect to set up Paystack only on the client side
+  useEffect(() => {
+    // This ensures Paystack hook is only initialized after mount
+    const paystackConfig = {
+      reference: `${new Date().getTime()}`,
+      email: user?.email || "customer@example.com",
+      amount: calculatePrice() * 100, // in kobo
+      publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
+      metadata: {
+        custom_fields: [
+          {
+            display_name: "Service Type",
+            variable_name: "service_type",
+            value: selectedService,
+          },
+        ],
+      },
+    };
+    const initPayment = usePaystackPayment(paystackConfig);
+    setInitializePayment(() => initPayment); // Store the function for later use
+  }, [selectedService, user, formData]); // Re-run if these dependencies change
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -1796,6 +2120,7 @@ export default function AssignmentHelpPage() {
   };
 
   const handleSubmit = async () => {
+    // Validate required fields
     const requiredFields = [
       "studentName",
       "matricNumber",
@@ -1813,11 +2138,14 @@ export default function AssignmentHelpPage() {
       }
     }
 
-    if (selectedService === "printing" || selectedService === "print-bind") {
-      if (!formData.handwrittenRequired && uploadedFiles.length === 0) {
-        toast.error("Please upload files or select handwritten option");
-        return;
-      }
+    // Validate service-specific requirements
+    if (
+      (selectedService === "printing" || selectedService === "print-bind") &&
+      !formData.handwrittenRequired &&
+      uploadedFiles.length === 0
+    ) {
+      toast.error("Please upload files or select handwritten option");
+      return;
     }
 
     if (
@@ -1838,49 +2166,144 @@ export default function AssignmentHelpPage() {
         return;
       }
 
-      const formDataToSend = new FormData();
-      formDataToSend.append("serviceType", selectedService || "");
-      formDataToSend.append("price", calculatePrice().toString());
-      formDataToSend.append(
-        "details",
-        JSON.stringify({
-          ...formData,
-          repDetails: courseReps.find((rep) => rep.id === formData.selectedRep),
-          attachments: uploadedFiles.map((file) => file.name),
-        })
-      );
+      // Prepare the complete order data structure
+      const orderData = {
+        serviceType: selectedService,
+        price: calculatePrice(),
+        details: {
+          // Student information (always included)
+          studentName: formData.studentName,
+          matricNumber: formData.matricNumber,
+          courseCode: formData.courseCode,
 
+          // Printing-related fields (for print services)
+          ...((selectedService === "print-bind" ||
+            selectedService === "printing") && {
+            printType: formData.printType,
+            copies: formData.copies,
+            doubleSided: formData.doubleSided,
+            handwrittenRequired: formData.handwrittenRequired,
+            handwritingInstructions: formData.handwritingInstructions,
+            pages: formData.pages || 1, // Default to 1 if not specified
+          }),
+
+          // Binding-related fields (for binding services)
+          ...((selectedService === "print-bind" ||
+            selectedService === "binding") && {
+            bindingType: formData.bindingType,
+          }),
+
+          // Assignment-related fields (for complete help/custom)
+          ...((selectedService === "complete-help" ||
+            selectedService === "custom") && {
+            assignmentQuestion: formData.assignmentQuestion,
+            pages: formData.pages || 1,
+            formatting: formData.formatting,
+            urgency: formData.urgency,
+            deliveryFormat: formData.deliveryFormat,
+          }),
+
+          // Common fields
+          selectedRep: formData.selectedRep,
+          specialInstructions: formData.specialInstructions,
+          deadline: formData.deadline,
+          repDetails: courseReps.find((rep) => rep.id === formData.selectedRep),
+        },
+        attachments: uploadedFiles.map((file) => file.name),
+        paymentReference: `${new Date().getTime()}`,
+      };
+
+      // Prepare FormData for file uploads
+      const formDataToSend = new FormData();
+      formDataToSend.append("data", JSON.stringify(orderData));
+
+      // Add files if they exist
       uploadedFiles.forEach((file) => {
         formDataToSend.append("files", file);
       });
 
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formDataToSend,
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to submit order");
+      // Check if initializePayment is available (client-side only)
+      if (!initializePayment) {
+        toast.error("Payment system is not ready. Please try again.");
+        setIsSubmitting(false);
+        return;
       }
 
-      const { orderId } = await res.json();
-      toast.success("Order created successfully!");
-      router.push(`/student/orders/${orderId}/success`);
+      // Initialize Paystack payment
+      initializePayment({
+        reference: orderData.paymentReference,
+        email: user?.email || "customer@example.com",
+        amount: orderData.price * 100, // in kobo
+        publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
+        metadata: {
+          custom_fields: [
+            {
+              display_name: "Service Type",
+              variable_name: "service_type",
+              value: selectedService,
+            },
+            {
+              display_name: "Matric Number",
+              variable_name: "matric_number",
+              value: formData.matricNumber,
+            },
+          ],
+        },
+        onSuccess: async (response) => {
+          try {
+            // Submit order to backend after successful payment
+            const res = await fetch("/api/orders", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              body: formDataToSend,
+            });
+
+            if (!res.ok) {
+              const errorData = await res.json();
+              throw new Error(errorData.error || "Failed to submit order");
+            }
+
+            const { orderId } = await res.json();
+            toast.success("Payment successful! Order created.");
+            router.push(`/student/orders/${orderId}/success`);
+          } catch (error) {
+            console.error("Order submission error:", error);
+            toast.error(error.message || "Failed to create order after payment");
+            setIsSubmitting(false);
+          }
+        },
+        onClose: () => {
+          toast.warning("Payment was not completed");
+          setIsSubmitting(false);
+        },
+      });
     } catch (error) {
       console.error("Submission error:", error);
       toast.error(error.message || "Order submission failed");
-    } finally {
       setIsSubmitting(false);
     }
   };
 
-  const filteredReps = formData.courseCode
-    ? courseReps.filter((rep) => rep.courses.includes(formData.courseCode))
-    : [];
+  // Helper function to normalize course codes
+  function normalizeCourseCode(code: string): string {
+    return code.replace(/\s+/g, "").toUpperCase();
+  }
+
+  // Helper function to find reps by course code
+  function findRepsByCourse(courseCode: string) {
+    if (!courseCode) return [];
+
+    const normalizedInput = normalizeCourseCode(courseCode);
+    return courseReps.filter((rep) =>
+      rep.courses.some(
+        (course) => normalizeCourseCode(course) === normalizedInput
+      )
+    );
+  }
+
+  const filteredReps = findRepsByCourse(formData.courseCode);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -2044,20 +2467,61 @@ export default function AssignmentHelpPage() {
                   </div>
                 </div>
 
-                <div className="mt-5">
+                <div className="mt-5 relative">
                   <label className="block font-medium text-gray-700 mb-2">
                     Course Code *
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.courseCode}
-                    onChange={(e) =>
-                      setFormData({ ...formData, courseCode: e.target.value })
-                    }
-                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g., CSC 101"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      value={formData.courseCode}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          courseCode: e.target.value,
+                          selectedRep: "",
+                        });
+                      }}
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                      placeholder="e.g., CSC 101 or PHY101"
+                      list="courseSuggestions"
+                    />
+                    {formData.courseCode && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData({
+                            ...formData,
+                            courseCode: "",
+                            selectedRep: "",
+                          });
+                        }}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Course code validation feedback */}
+                  {formData.courseCode && filteredReps.length === 0 && (
+                    <p className="mt-2 text-sm text-red-600">
+                      No representatives found for {formData.courseCode}. Please
+                      check the course code.
+                    </p>
+                  )}
+
+
+
+                  {/* Course suggestions datalist */}
+                  <datalist id="courseSuggestions">
+                    {Array.from(
+                      new Set(courseReps.flatMap((rep) => rep.courses))
+                    ).map((course) => (
+                      <option key={course} value={course} />
+                    ))}
+                  </datalist>
                 </div>
               </div>
 
@@ -2185,7 +2649,7 @@ export default function AssignmentHelpPage() {
                           value={formData.copies}
                           onChange={(value) => {
                             if (formData.handwrittenRequired) return;
-                            setFormData({...formData, copies: value});
+                            setFormData({ ...formData, copies: value });
                           }}
                           min={1}
                           max={10}
@@ -2246,7 +2710,8 @@ export default function AssignmentHelpPage() {
                             className="h-5 w-5 text-blue-600 rounded"
                           />
                           <span className="font-medium text-gray-700">
-                            Lecturer requires handwritten submission on fullscap paper
+                            Lecturer requires handwritten submission on fullscap
+                            paper
                           </span>
                         </label>
 
@@ -2258,15 +2723,18 @@ export default function AssignmentHelpPage() {
                               </label>
                               <NumberInput
                                 value={formData.pages}
-                                onChange={(value) => setFormData({...formData, pages: value})}
+                                onChange={(value) =>
+                                  setFormData({ ...formData, pages: value })
+                                }
                                 min={1}
                                 className="w-full"
                               />
                               <p className="text-sm text-gray-500 mt-1">
-                                Price: ₦500 (1st page) + ₦200 per additional page
+                                Price: ₦500 (1st page) + ₦200 per additional
+                                page
                               </p>
                             </div>
-                            
+
                             <div>
                               <label className="block font-medium text-gray-700 mb-2">
                                 Handwriting Instructions
@@ -2375,7 +2843,9 @@ export default function AssignmentHelpPage() {
                       </label>
                       <NumberInput
                         value={formData.pages}
-                        onChange={(value) => setFormData({...formData, pages: value})}
+                        onChange={(value) =>
+                          setFormData({ ...formData, pages: value })
+                        }
                         min={1}
                         className="w-full"
                       />
@@ -2478,7 +2948,8 @@ export default function AssignmentHelpPage() {
                             Handwritten on Fullscap Paper
                           </p>
                           <p className="text-sm text-gray-500">
-                            We&apos;ll write the assignment by hand on fullscap paper
+                            We'll write the assignment by hand on fullscap
+                            paper
                           </p>
                         </div>
                       </label>
@@ -2582,63 +3053,68 @@ export default function AssignmentHelpPage() {
                 </h2>
 
                 <div className="space-y-5">
-                  <div>
+                  <div className="mt-5">
                     <label className="block font-medium text-gray-700 mb-2">
                       Course Representative *
                     </label>
-                    <select
-                      value={formData.selectedRep}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          selectedRep: e.target.value,
-                        })
-                      }
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                      disabled={!formData.courseCode}
-                    >
-                      <option value="">Select your course rep</option>
-                      {filteredReps.map((rep) => (
-                        <option key={rep.id} value={rep.id}>
-                          {rep.name} ({rep.courses.join(", ")})
-                        </option>
-                      ))}
-                    </select>
+
+                    {filteredReps.length > 0 ? (
+                      <div className="space-y-3">
+                        {filteredReps.map((rep) => (
+                          <div
+                            key={rep.id}
+                            onClick={() =>
+                              setFormData({ ...formData, selectedRep: rep.id })
+                            }
+                            className={`p-4 border rounded-xl cursor-pointer transition-colors ${
+                              formData.selectedRep === rep.id
+                                ? "border-blue-500 bg-blue-50"
+                                : "border-gray-300 hover:border-gray-400"
+                            }`}
+                          >
+                            <div className="flex items-start">
+                              <div
+                                className={`flex-shrink-0 h-5 w-5 rounded-full border flex items-center justify-center mr-3 mt-1 ${
+                                  formData.selectedRep === rep.id
+                                    ? "border-blue-500 bg-blue-500"
+                                    : "border-gray-400"
+                                }`}
+                              >
+                                {formData.selectedRep === rep.id && (
+                                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                                )}
+                              </div>
+                              <div>
+                                <h4 className="font-medium text-gray-900">
+                                  {rep.name}
+                                </h4>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  <span className="font-medium">Courses:</span>{" "}
+                                  {rep.courses.join(", ")}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  <span className="font-medium">Contact:</span>{" "}
+                                  {rep.phone} | {rep.email}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  <span className="font-medium">Location:</span>{" "}
+                                  {rep.location}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-gray-50 rounded-xl text-center">
+                        <p className="text-gray-500">
+                          {formData.courseCode
+                            ? "No representatives found for this course"
+                            : "Enter a course code to see available representatives"}
+                        </p>
+                      </div>
+                    )}
                   </div>
-
-                  {formData.selectedRep && (
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <h4 className="font-medium text-blue-800">
-                        {
-                          courseReps.find((r) => r.id === formData.selectedRep)
-                            ?.name
-                        }
-                      </h4>
-                      <p className="text-sm text-blue-700 mt-1">
-                        Email:{" "}
-                        {
-                          courseReps.find((r) => r.id === formData.selectedRep)
-                            ?.email
-                        }
-                      </p>
-                      <p className="text-sm text-blue-700">
-                        Phone:{" "}
-                        {
-                          courseReps.find((r) => r.id === formData.selectedRep)
-                            ?.phone
-                        }
-                      </p>
-                      <p className="text-sm text-blue-700">
-                        Location:{" "}
-                        {
-                          courseReps.find((r) => r.id === formData.selectedRep)
-                            ?.location
-                        }
-                      </p>
-                    </div>
-                  )}
-
                   <div className="mt-4">
                     <label className="block font-medium text-gray-700 mb-2">
                       Submission Deadline *
@@ -2710,7 +3186,8 @@ export default function AssignmentHelpPage() {
                     ];
 
                     if (
-                      (selectedService === "print-bind" || selectedService === "printing") &&
+                      (selectedService === "print-bind" ||
+                        selectedService === "printing") &&
                       uploadedFiles.length === 0 &&
                       !formData.handwrittenRequired
                     ) {
@@ -2719,7 +3196,8 @@ export default function AssignmentHelpPage() {
                     }
 
                     if (
-                      (selectedService === "complete-help" || selectedService === "custom") &&
+                      (selectedService === "complete-help" ||
+                        selectedService === "custom") &&
                       !formData.assignmentQuestion
                     ) {
                       toast.error("Please provide assignment details");
@@ -2812,7 +3290,8 @@ export default function AssignmentHelpPage() {
                       <span className="text-gray-600">Files to Print:</span>
                       <span className="font-medium text-gray-900">
                         {uploadedFiles.length} file(s)
-                        {formData.handwrittenRequired && " (Optional for handwritten)"}
+                        {formData.handwrittenRequired &&
+                          " (Optional for handwritten)"}
                       </span>
                     </div>
                   )}
@@ -2861,7 +3340,8 @@ export default function AssignmentHelpPage() {
                               Handwriting Cost:
                             </span>
                             <span className="font-medium text-gray-900">
-                              ₦500 + {formData.pages - 1} × ₦200 = ₦{500 + (formData.pages - 1) * 200}
+                              ₦500 + {formData.pages - 1} × ₦200 = ₦
+                              {500 + (formData.pages - 1) * 200}
                             </span>
                           </div>
                           {formData.handwritingInstructions && (

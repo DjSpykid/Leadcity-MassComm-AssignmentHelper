@@ -1,3 +1,5 @@
+
+
 // "use client";
 
 // import { CheckCircle2 } from "lucide-react";
@@ -7,24 +9,21 @@
 // import { useEffect } from "react";
 // import confetti from "canvas-confetti";
 
-// interface PageProps {
-//   params: {
-//     orderId: string;
-//   };
-//   searchParams?: Record<string, string | string[] | undefined>;
-// }
-
-
-// export default function OrderSuccessPage({params}: PageProps) {
+// // @ts-nocheck - Disables TypeScript checking for this file
+// export default function OrderSuccessPage({
+//   params,
+// }: {
+//   params: { orderId: string };
+// }) {
 //   const router = useRouter();
 
 //   useEffect(() => {
-//     // Fire confetti
+//     // Fire confetti with error handling
 //     confetti({
 //       particleCount: 100,
 //       spread: 70,
 //       origin: { y: 0.6 },
-//     });
+//     }).catch(() => {}); // Silent catch to prevent unhandled promise rejection
 //   }, []);
 
 //   return (
@@ -80,11 +79,11 @@
 //           </Button>
 
 //           <Button
-//             onClick={() => router.push("/")}
+//             onClick={() => router.push("/student/dashboard")}
 //             variant="outline"
 //             className="w-full py-6 rounded-xl border-gray-300 hover:bg-gray-50 transition-all duration-300 transform hover:scale-[1.02]"
 //           >
-//             <span className="font-medium">Continue Shopping</span>
+//             <span className="font-medium">Visit Your Dashboard</span>
 //           </Button>
 //         </motion.div>
 
@@ -105,22 +104,22 @@
 // }
 
 
+
+
+
 "use client";
 
 import { CheckCircle2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import confetti from "canvas-confetti";
 
-// @ts-nocheck - Disables TypeScript checking for this file
-export default function OrderSuccessPage({
-  params,
-}: {
-  params: { orderId: string };
-}) {
+export default function OrderSuccessPage() {
   const router = useRouter();
+  const params = useParams();
+  const orderId = params.orderId as string;
 
   useEffect(() => {
     // Fire confetti with error handling
@@ -166,8 +165,8 @@ export default function OrderSuccessPage({
           transition={{ delay: 0.3 }}
           className="text-gray-600 mb-8 text-lg"
         >
-          Your order <span className="font-semibold">#{params.orderId}</span>{" "}
-          has been received and is being processed.
+          Your order <span className="font-semibold">#{orderId}</span> has been
+          received and is being processed.
         </motion.p>
 
         <motion.div
@@ -177,18 +176,18 @@ export default function OrderSuccessPage({
           className="flex flex-col space-y-4"
         >
           <Button
-            onClick={() => router.push(`/student/orders/${params.orderId}`)}
+            onClick={() => router.push(`/student/orders/${orderId}`)}
             className="w-full py-6 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg transition-all duration-300 transform hover:scale-[1.02]"
           >
             <span className="text-white font-medium">View Order Details</span>
           </Button>
 
           <Button
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/student/dashboard")}
             variant="outline"
             className="w-full py-6 rounded-xl border-gray-300 hover:bg-gray-50 transition-all duration-300 transform hover:scale-[1.02]"
           >
-            <span className="font-medium">Continue Shopping</span>
+            <span className="font-medium">Visit Your Dashboard</span>
           </Button>
         </motion.div>
 

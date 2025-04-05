@@ -506,6 +506,11 @@
 
 
 
+
+
+
+
+
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
@@ -527,26 +532,30 @@ import {
 import OrderHelp from "@/components/OrderHelp";
 
 type ServiceFields = {
-  name: string;
+  studentName: string;
   matricNumber: string;
-  deadline: string;
-  additionalInstructions?: string;
-  attachments?: string[];
-  deliveryMethod?: string;
-  courseSubject?: string;
-  assignmentType?: string;
-  wordCount?: number;
-  formattingRequirements?: string;
-  documentType?: string;
-  numberOfPages?: number;
-  bindingType?: string;
-  colorPreference?: string;
-  includeCoverPage?: boolean;
+  courseCode: string;
   printType?: string;
-  paperSize?: string;
-  existingDocumentSource?: string;
-  bindingColor?: string;
-  customDescription?: string;
+  copies?: number;
+  doubleSided?: boolean;
+  handwrittenRequired?: boolean;
+  handwritingInstructions?: string;
+  bindingType?: string;
+  assignmentQuestion?: string;
+  pages?: number;
+  formatting?: string;
+  urgency?: string;
+  deliveryFormat?: string;
+  selectedRep: string;
+  specialInstructions?: string;
+  deadline: string;
+  attachments?: string[];
+  repDetails?: {
+    name: string;
+    phone: string;
+    email: string;
+    location: string;
+  };
 };
 
 type Order = {
@@ -650,7 +659,7 @@ export default function OrderDetailsPage() {
 
         const data = await res.json();
         setOrder(data);
-      } catch (err: unknown) {
+      } catch (err: any) {
         setError(err.message);
       } finally {
         setLoading(false);
@@ -660,10 +669,37 @@ export default function OrderDetailsPage() {
     fetchOrder();
   }, [params.orderId, user, router, getToken]);
 
-  const handleDownload = (fileUrl: string) => {
-    // Only handle properly formatted URLs
-    if (fileUrl.startsWith("http")) {
-      window.open(fileUrl, "_blank");
+  const handleDownload = async (filePath: string) => {
+    try {
+      const token = await getToken();
+
+      if (filePath.startsWith("http")) {
+        window.open(filePath, "_blank");
+        return;
+      }
+
+      const response = await fetch(
+        `/api/download?file=${encodeURIComponent(filePath)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Download failed");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filePath.split("/").pop() || "download";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (error) {
+      console.error("Download error:", error);
+      window.open(filePath, "_blank");
     }
   };
 
@@ -798,7 +834,7 @@ export default function OrderDetailsPage() {
             <div>
               <span className="text-gray-600 block text-sm">Student Name:</span>
               <p className="font-medium text-gray-900 mt-1">
-                {order.details.name}
+                {order.details.studentName}
               </p>
             </div>
             <div>
@@ -807,6 +843,12 @@ export default function OrderDetailsPage() {
               </span>
               <p className="font-medium text-gray-900 mt-1">
                 {order.details.matricNumber}
+              </p>
+            </div>
+            <div>
+              <span className="text-gray-600 block text-sm">Course Code:</span>
+              <p className="font-medium text-gray-900 mt-1">
+                {order.details.courseCode}
               </p>
             </div>
             <div>
@@ -820,116 +862,142 @@ export default function OrderDetailsPage() {
               <>
                 <div>
                   <span className="text-gray-600 block text-sm">
-                    Course/Subject:
+                    Assignment Requirements:
                   </span>
                   <p className="font-medium text-gray-900 mt-1">
-                    {order.details.courseSubject || "Not specified"}
+                    {order.details.assignmentQuestion || "Not specified"}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-gray-600 block text-sm">Pages:</span>
+                  <p className="font-medium text-gray-900 mt-1">
+                    {order.details.pages || "Not specified"}
                   </p>
                 </div>
                 <div>
                   <span className="text-gray-600 block text-sm">
-                    Assignment Type:
+                    Delivery Format:
                   </span>
                   <p className="font-medium text-gray-900 mt-1">
-                    {order.details.assignmentType || "Not specified"}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-gray-600 block text-sm">
-                    Word Count:
-                  </span>
-                  <p className="font-medium text-gray-900 mt-1">
-                    {order.details.wordCount || "Not specified"}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-gray-600 block text-sm">
-                    Formatting:
-                  </span>
-                  <p className="font-medium text-gray-900 mt-1">
-                    {order.details.formattingRequirements || "Not specified"}
+                    {order.details.deliveryFormat === "handwritten"
+                      ? "Handwritten"
+                      : "Printed & Bound"}
                   </p>
                 </div>
               </>
             )}
 
-            {order.serviceType === "print-bind" && (
+            {(order.serviceType === "print-bind" ||
+              order.serviceType === "printing") && (
               <>
                 <div>
                   <span className="text-gray-600 block text-sm">
-                    Document Type:
+                    Print Type:
                   </span>
                   <p className="font-medium text-gray-900 mt-1">
-                    {order.details.documentType || "Not specified"}
+                    {order.details.printType === "color"
+                      ? "Color"
+                      : "Black & White"}
                   </p>
                 </div>
                 <div>
-                  <span className="text-gray-600 block text-sm">
-                    Number of Pages:
-                  </span>
+                  <span className="text-gray-600 block text-sm">Copies:</span>
                   <p className="font-medium text-gray-900 mt-1">
-                    {order.details.numberOfPages || "Not specified"}
+                    {order.details.copies}
                   </p>
                 </div>
-                <div>
-                  <span className="text-gray-600 block text-sm">
-                    Binding Type:
-                  </span>
-                  <p className="font-medium text-gray-900 mt-1">
-                    {order.details.bindingType || "Not specified"}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-gray-600 block text-sm">
-                    Color Preference:
-                  </span>
-                  <p className="font-medium text-gray-900 mt-1">
-                    {order.details.colorPreference || "Not specified"}
-                  </p>
-                </div>
+                {order.details.handwrittenRequired && (
+                  <div>
+                    <span className="text-gray-600 block text-sm">
+                      Handwritten Pages:
+                    </span>
+                    <p className="font-medium text-gray-900 mt-1">
+                      {order.details.pages}
+                    </p>
+                  </div>
+                )}
               </>
             )}
 
-            {order.details.additionalInstructions && (
+            {(order.serviceType === "print-bind" ||
+              order.serviceType === "binding") && (
               <div>
                 <span className="text-gray-600 block text-sm">
-                  Additional Instructions:
+                  Binding Type:
                 </span>
                 <p className="font-medium text-gray-900 mt-1">
-                  {order.details.additionalInstructions}
+                  {order.details.bindingType === "spiral"
+                    ? "Spiral"
+                    : "Thermal"}
                 </p>
               </div>
             )}
 
-            {order.details.attachments?.filter((file) =>
-              file.startsWith("http")
-            ).length ? (
+            {order.details.specialInstructions && (
+              <div>
+                <span className="text-gray-600 block text-sm">
+                  Special Instructions:
+                </span>
+                <p className="font-medium text-gray-900 mt-1">
+                  {order.details.specialInstructions}
+                </p>
+              </div>
+            )}
+
+            {order.details.repDetails && (
+              <>
+                <div>
+                  <span className="text-gray-600 block text-sm">
+                    Class Representative:
+                  </span>
+                  <p className="font-medium text-gray-900 mt-1">
+                    {order.details.repDetails.name}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-gray-600 block text-sm">
+                    Rep Contact:
+                  </span>
+                  <p className="font-medium text-gray-900 mt-1">
+                    {order.details.repDetails.phone}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-gray-600 block text-sm">
+                    Submission Location:
+                  </span>
+                  <p className="font-medium text-gray-900 mt-1">
+                    {order.details.repDetails.location}
+                  </p>
+                </div>
+              </>
+            )}
+
+            {order.details.attachments?.length ? (
               <div>
                 <span className="text-gray-600 block text-sm">
                   Attachments:
                 </span>
                 <div className="mt-2 space-y-2">
-                  {order.details.attachments
-                    .filter((file) => file.startsWith("http"))
-                    .map((file, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
-                      >
-                        <div className="flex items-center text-sm text-gray-700">
-                          <FileText className="h-4 w-4 mr-2 text-blue-600" />
-                          <span className="truncate max-w-[180px]">{file}</span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-blue-600 hover:text-blue-700"
-                          onClick={() => handleDownload(file)}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
+                  {order.details.attachments.map((file, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex items-center text-sm text-gray-700">
+                        <FileText className="h-4 w-4 mr-2 text-blue-600" />
+                        <span className="truncate max-w-[180px]">{file}</span>
                       </div>
-                    ))}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-blue-600 hover:text-blue-700"
+                        onClick={() => handleDownload(file)}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               </div>
             ) : null}
@@ -968,15 +1036,19 @@ export default function OrderDetailsPage() {
               </div>
             </div>
 
-            {order.status !== "COMPLETED" && order.status !== "SUBMITTED" && (
+            {order.status === "COMPLETED" || order.status === "SUBMITTED" ? (
+              <Button className="w-full mt-4 bg-blue-600 hover:bg-blue-700">
+                Download Completed Work
+              </Button>
+            ) : (
               <Button variant="outline" className="w-full mt-4" disabled>
                 Work in Progress
               </Button>
             )}
           </div>
         </div>
+        <OrderHelp/>
       </div>
-      <OrderHelp/>
     </div>
   );
 }

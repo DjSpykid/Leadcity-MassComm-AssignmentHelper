@@ -56,7 +56,7 @@ export default function WhatsAppHelp() {
               Chat with us on WhatsApp to confirm your order with payment receipt.
             </p>
             <Link
-              href="https://wa.me/2349069650658?text=Hi%20MassComm%20Solutions,%20I%20am%20here%20to%20confirm%20my%20order."
+              href="https://wa.me/2349123774118?text=Hi%20MassComm%20Solutions,%20I%20am%20here%20to%20confirm%20my%20order."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center w-full py-2 px-4 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors"

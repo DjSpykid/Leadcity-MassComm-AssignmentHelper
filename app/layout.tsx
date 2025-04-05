@@ -8,8 +8,8 @@ import WhatsAppHelp from "@/components/WhatsAppHelp";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "My App",
-  description: "My awesome Next.js app",
+  title: "Leadcity MassComm App",
+  description: "Leadcity MassComm Assignment Helper",
 };
 
 export default function RootLayout({

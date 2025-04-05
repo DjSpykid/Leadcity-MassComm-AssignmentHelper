@@ -20,12 +20,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   typescript: {
-    ignoreBuildErrors: true, // Disables TypeScript errors during build
+    ignoreBuildErrors: true, 
   },
   eslint: {
-    ignoreDuringBuilds: true, // Disables ESLint errors during build
+    ignoreDuringBuilds: true, 
   },
-  // Optional: If you're using static exports
+
   output: process.env.NEXT_OUTPUT_MODE === "export" ? "export" : undefined,
 };
 
