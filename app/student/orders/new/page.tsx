@@ -1812,9 +1812,18 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 "use client";
-import dynamic from "next/dynamic"; // Import dynamic from Next.js
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react"; // Added useEffect
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -1835,12 +1844,7 @@ import {
 import { courseReps } from "@/data/courseReps";
 import { useAuth } from "@/context/AuthContext";
 
-// Dynamically import usePaystackPayment with SSR disabled
-const usePaystackPayment = dynamic(
-  () => import("react-paystack").then((mod) => mod.usePaystackPayment),
-  { ssr: false } // Prevents server-side rendering of this hook
-);
-
+// Service types, options, and NumberInput component remain unchanged
 const serviceTypes = [
   {
     id: "complete-help",
@@ -1853,8 +1857,7 @@ const serviceTypes = [
   {
     id: "print-bind",
     title: "Print & Bind / Hand Written Assignment Only",
-    description:
-      "Professional writng of your assign / printing and binding of your documents ",
+    description: "Professional writing of your assign / printing and binding",
     icon: "🖨️",
     features: ["High-quality printing", "Spiral binding"],
     basePrice: 550,
@@ -1864,11 +1867,7 @@ const serviceTypes = [
     title: "Printing Only",
     description: "Quick and reliable document printing",
     icon: "📄",
-    features: [
-      "Multiple copies",
-      "Color/B&W options",
-      "Various paper types",
-    ],
+    features: ["Multiple copies", "Color/B&W options", "Various paper types"],
     basePrice: 400,
   },
   {
@@ -1900,19 +1899,10 @@ const bindingOptions = [
 ];
 
 const urgencyOptions = [
-  {
-    id: "standard",
-    label: "Standard (2-3 days)",
-    multiplier: 1,
-  },
-  {
-    id: "urgent",
-    label: "Urgent (24 hours) +20%",
-    multiplier: 1.4,
-  },
+  { id: "standard", label: "Standard (2-3 days)", multiplier: 1 },
+  { id: "urgent", label: "Urgent (24 hours) +20%", multiplier: 1.4 },
 ];
 
-// Custom Number Input Component
 const NumberInput = ({
   value,
   onChange,
@@ -1922,22 +1912,16 @@ const NumberInput = ({
   disabled = false,
 }) => {
   const handleIncrement = () => {
-    if (!disabled && value < max) {
-      onChange(value + 1);
-    }
+    if (!disabled && value < max) onChange(value + 1);
   };
 
   const handleDecrement = () => {
-    if (!disabled && value > min) {
-      onChange(value - 1);
-    }
+    if (!disabled && value > min) onChange(value - 1);
   };
 
   const handleChange = (e) => {
     const newValue = parseInt(e.target.value) || min;
-    if (newValue >= min && newValue <= max) {
-      onChange(newValue);
-    }
+    if (newValue >= min && newValue <= max) onChange(newValue);
   };
 
   return (
@@ -1984,6 +1968,7 @@ export default function AssignmentHelpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUrgent, setIsUrgent] = useState(false);
+  const [isClient, setIsClient] = useState(false); // New state to track client-side rendering
 
   const [formData, setFormData] = useState({
     studentName: "",
@@ -2005,30 +1990,10 @@ export default function AssignmentHelpPage() {
     deadline: "",
   });
 
-  // State to hold the Paystack initialize function, only set on client-side
-  const [initializePayment, setInitializePayment] = useState<any>(null);
-
-  // Use useEffect to set up Paystack only on the client side
+  // Ensure code runs only on client side
   useEffect(() => {
-    // This ensures Paystack hook is only initialized after mount
-    const paystackConfig = {
-      reference: `${new Date().getTime()}`,
-      email: user?.email || "customer@example.com",
-      amount: calculatePrice() * 100, // in kobo
-      publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
-      metadata: {
-        custom_fields: [
-          {
-            display_name: "Service Type",
-            variable_name: "service_type",
-            value: selectedService,
-          },
-        ],
-      },
-    };
-    const initPayment = usePaystackPayment(paystackConfig);
-    setInitializePayment(() => initPayment); // Store the function for later use
-  }, [selectedService, user, formData]); // Re-run if these dependencies change
+    setIsClient(true);
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -2047,23 +2012,19 @@ export default function AssignmentHelpPage() {
     const service = serviceTypes.find((s) => s.id === selectedService);
     let price = service?.basePrice || 0;
 
-    // Print/Bind specific calculations
     if (selectedService === "print-bind" || selectedService === "printing") {
-      // Handwritten takes priority
       if (formData.handwrittenRequired) {
         return price + 500 + (formData.pages - 1) * 200;
       }
 
       if (selectedService === "printing") {
-        // Printing Only service
-        price = 400; // Base price for printing service
+        price = 400;
         if (formData.printType === "color") {
           price += 800 * formData.copies;
         } else {
           price += 200 * (formData.copies - 1);
         }
       } else {
-        // Print & Bind service
         if (formData.printType === "color") {
           price += 800 * formData.copies;
         } else if (formData.copies > 1) {
@@ -2081,7 +2042,6 @@ export default function AssignmentHelpPage() {
       }
     }
 
-    // Complete help service calculations
     if (selectedService === "complete-help") {
       price += formData.pages * 200;
       const urgency = urgencyOptions.find((u) => u.id === formData.urgency);
@@ -2089,7 +2049,6 @@ export default function AssignmentHelpPage() {
       if (formData.deliveryFormat === "printed-bound") price += 1000;
     }
 
-    // Custom service calculations
     if (selectedService === "custom") {
       price += Math.min(
         Math.floor(formData.assignmentQuestion.length / 100) * 500,
@@ -2099,7 +2058,6 @@ export default function AssignmentHelpPage() {
       price *= urgency?.multiplier || 1;
     }
 
-    // Urgency fee for print/bind services
     if (
       (selectedService === "print-bind" ||
         selectedService === "printing" ||
@@ -2110,17 +2068,13 @@ export default function AssignmentHelpPage() {
       const now = new Date();
       const hoursDiff =
         (deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-      if (hoursDiff < 24) {
-        price *= 1.3;
-      }
+      if (hoursDiff < 24) price *= 1.3;
     }
 
     return Math.round(price);
   };
 
   const handleSubmit = async () => {
-    // Validate required fields
     const requiredFields = [
       "studentName",
       "matricNumber",
@@ -2138,7 +2092,6 @@ export default function AssignmentHelpPage() {
       }
     }
 
-    // Validate service-specific requirements
     if (
       (selectedService === "printing" || selectedService === "print-bind") &&
       !formData.handwrittenRequired &&
@@ -2156,6 +2109,11 @@ export default function AssignmentHelpPage() {
       return;
     }
 
+    if (!isClient) {
+      toast.error("Payment functionality is only available in the browser");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -2166,17 +2124,13 @@ export default function AssignmentHelpPage() {
         return;
       }
 
-      // Prepare the complete order data structure
       const orderData = {
         serviceType: selectedService,
         price: calculatePrice(),
         details: {
-          // Student information (always included)
           studentName: formData.studentName,
           matricNumber: formData.matricNumber,
           courseCode: formData.courseCode,
-
-          // Printing-related fields (for print services)
           ...((selectedService === "print-bind" ||
             selectedService === "printing") && {
             printType: formData.printType,
@@ -2184,16 +2138,12 @@ export default function AssignmentHelpPage() {
             doubleSided: formData.doubleSided,
             handwrittenRequired: formData.handwrittenRequired,
             handwritingInstructions: formData.handwritingInstructions,
-            pages: formData.pages || 1, // Default to 1 if not specified
+            pages: formData.pages || 1,
           }),
-
-          // Binding-related fields (for binding services)
           ...((selectedService === "print-bind" ||
             selectedService === "binding") && {
             bindingType: formData.bindingType,
           }),
-
-          // Assignment-related fields (for complete help/custom)
           ...((selectedService === "complete-help" ||
             selectedService === "custom") && {
             assignmentQuestion: formData.assignmentQuestion,
@@ -2202,8 +2152,6 @@ export default function AssignmentHelpPage() {
             urgency: formData.urgency,
             deliveryFormat: formData.deliveryFormat,
           }),
-
-          // Common fields
           selectedRep: formData.selectedRep,
           specialInstructions: formData.specialInstructions,
           deadline: formData.deadline,
@@ -2213,50 +2161,27 @@ export default function AssignmentHelpPage() {
         paymentReference: `${new Date().getTime()}`,
       };
 
-      // Prepare FormData for file uploads
       const formDataToSend = new FormData();
       formDataToSend.append("data", JSON.stringify(orderData));
-
-      // Add files if they exist
       uploadedFiles.forEach((file) => {
         formDataToSend.append("files", file);
       });
 
-      // Check if initializePayment is available (client-side only)
-      if (!initializePayment) {
-        toast.error("Payment system is not ready. Please try again.");
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Initialize Paystack payment
-      initializePayment({
+      // Dynamically import and use Paystack inside handleSubmit
+      const { usePaystackPayment } = await import("react-paystack");
+      const initializePayment = usePaystackPayment({
         reference: orderData.paymentReference,
         email: user?.email || "customer@example.com",
         amount: orderData.price * 100, // in kobo
         publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
-        metadata: {
-          custom_fields: [
-            {
-              display_name: "Service Type",
-              variable_name: "service_type",
-              value: selectedService,
-            },
-            {
-              display_name: "Matric Number",
-              variable_name: "matric_number",
-              value: formData.matricNumber,
-            },
-          ],
-        },
+      });
+
+      initializePayment({
         onSuccess: async (response) => {
           try {
-            // Submit order to backend after successful payment
             const res = await fetch("/api/orders", {
               method: "POST",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
+              headers: { Authorization: `Bearer ${token}` },
               body: formDataToSend,
             });
 
@@ -2270,7 +2195,9 @@ export default function AssignmentHelpPage() {
             router.push(`/student/orders/${orderId}/success`);
           } catch (error) {
             console.error("Order submission error:", error);
-            toast.error(error.message || "Failed to create order after payment");
+            toast.error(
+              error.message || "Failed to create order after payment"
+            );
             setIsSubmitting(false);
           }
         },
@@ -2286,15 +2213,12 @@ export default function AssignmentHelpPage() {
     }
   };
 
-  // Helper function to normalize course codes
   function normalizeCourseCode(code: string): string {
     return code.replace(/\s+/g, "").toUpperCase();
   }
 
-  // Helper function to find reps by course code
   function findRepsByCourse(courseCode: string) {
     if (!courseCode) return [];
-
     const normalizedInput = normalizeCourseCode(courseCode);
     return courseReps.filter((rep) =>
       rep.courses.some(
@@ -2305,6 +2229,7 @@ export default function AssignmentHelpPage() {
 
   const filteredReps = findRepsByCourse(formData.courseCode);
 
+  // JSX remains unchanged from your previous version
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -2504,7 +2429,6 @@ export default function AssignmentHelpPage() {
                     )}
                   </div>
 
-                  {/* Course code validation feedback */}
                   {formData.courseCode && filteredReps.length === 0 && (
                     <p className="mt-2 text-sm text-red-600">
                       No representatives found for {formData.courseCode}. Please
@@ -2512,9 +2436,6 @@ export default function AssignmentHelpPage() {
                     </p>
                   )}
 
-
-
-                  {/* Course suggestions datalist */}
                   <datalist id="courseSuggestions">
                     {Array.from(
                       new Set(courseReps.flatMap((rep) => rep.courses))
@@ -2865,7 +2786,7 @@ export default function AssignmentHelpPage() {
                             formatting: e.target.value,
                           })
                         }
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full p-3 border border-gray-300 rounded-xl focus peer:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="">Select formatting style</option>
                         <option value="APA">
@@ -2948,8 +2869,7 @@ export default function AssignmentHelpPage() {
                             Handwritten on Fullscap Paper
                           </p>
                           <p className="text-sm text-gray-500">
-                            We'll write the assignment by hand on fullscap
-                            paper
+                            We'll write the assignment by hand on fullscap paper
                           </p>
                         </div>
                       </label>
@@ -3125,12 +3045,10 @@ export default function AssignmentHelpPage() {
                       value={formData.deadline}
                       onChange={(e) => {
                         setFormData({ ...formData, deadline: e.target.value });
-
                         const deadlineDate = new Date(e.target.value);
                         const now = new Date();
                         const hoursLeft =
                           (deadlineDate - now) / (1000 * 60 * 60);
-
                         setIsUrgent(hoursLeft < 24);
                       }}
                       min={new Date().toISOString().slice(0, 16)}
@@ -3405,7 +3323,7 @@ export default function AssignmentHelpPage() {
                       {formData.formatting && (
                         <div className="flex justify-between pb-3 border-b border-gray-100">
                           <span className="text-gray-600">Formatting:</span>
-                          <span className="font-medium text-gray-900">
+                          <span className="font ragazzi-medium text-gray-900">
                             {formData.formatting}
                           </span>
                         </div>

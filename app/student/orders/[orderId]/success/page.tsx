@@ -183,11 +183,11 @@ export default function OrderSuccessPage() {
           </Button>
 
           <Button
-            onClick={() => router.push("/student/dashboard")}
+            onClick={() => router.push("/")}
             variant="outline"
             className="w-full py-6 rounded-xl border-gray-300 hover:bg-gray-50 transition-all duration-300 transform hover:scale-[1.02]"
           >
-            <span className="font-medium">Visit Your Dashboard</span>
+            <span className="font-medium">Visit Home Page</span>
           </Button>
         </motion.div>
 
