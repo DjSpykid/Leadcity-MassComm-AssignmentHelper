@@ -414,7 +414,7 @@ export default function Home() {
                 <Phone className="w-3 h-3 sm:w-4 sm:h-4" /> +234 912 377 4118
               </div>
               <div className="flex items-center gap-2 text-sm sm:text-base text-gray-400">
-                <Mail className="w-3 h-3 sm:w-4 sm:h-4" /> opanugaaladetomiwa@gmail.com
+                <Mail className="w-3 h-3 sm:w-4 sm:h-4" /> masscommsolutions@gmail.com
               </div>
             </div>
             <div>
