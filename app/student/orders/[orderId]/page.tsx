@@ -721,7 +721,7 @@
 //       <div className="flex justify-center items-center min-h-screen">
 //         <div className="text-center">
 //           <p className="mb-4">Order not found</p>
-//           <Button onClick={() => router.push("/dashboard")}>
+//           <Button onClick={() => router.push("/student/dashboard")}>
 //             Back to Dashboard
 //           </Button>
 //         </div>
